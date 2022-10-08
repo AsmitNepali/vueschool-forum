@@ -2,25 +2,20 @@
   <div class="col-large push-top">
     <h1>{{ thread.title }}</h1>
     <post-list :posts="threadPosts"></post-list>
-    <div class="col-full">
-      <form action="">
-        <div class="form-group">
-          <textarea :value="newPostText" @input="newPostText = $event.target.value" name="" id="" cols="30" rows="10" class="form-input"></textarea>
-        </div>
-        <div class="form-actions">
-          <button class="btn-blue">Submit Post</button>
-        </div>
-      </form>
-    </div>
+    <post-editor @save="addPost"></post-editor>
   </div>
 </template>
 
 <script>
 import sourceData from '@/data.json'
 import PostList from '@/components/PostList'
+import PostEditor from '@/components/PostEditor'
 
 export default {
-  components: { PostList },
+  components: {
+    PostList,
+    PostEditor
+  },
   props: {
     id: {
       type: String,
@@ -31,7 +26,7 @@ export default {
     return {
       threads: sourceData.threads,
       posts: sourceData.posts,
-      newPostText: ''
+      text: ''
     }
   },
   computed: {
@@ -40,6 +35,18 @@ export default {
     },
     threadPosts () {
       return this.posts.filter(post => post.threadId === this.id)
+    }
+  },
+  methods: {
+    addPost (eventData) {
+      const post = {
+        ...eventData.post,
+        threadId: this.id
+      }
+      this.posts.push(post)
+      this.thread.posts.push(post.id)
+
+      this.text = ''
     }
   }
 }
