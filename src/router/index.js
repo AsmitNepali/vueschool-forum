@@ -40,6 +40,11 @@ const routes = [
     component: () => import('@/views/ForumView')
   },
   {
+    path: '/me',
+    name: 'Profile',
+    component: () => import('@/views/ProfileView')
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFoundView')

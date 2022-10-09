@@ -1,6 +1,5 @@
 <template>
     <h1>Welcome To Forum</h1>
-  {{sourceData}}
     <CategoryList :categories="categories"/>
 </template>
 
