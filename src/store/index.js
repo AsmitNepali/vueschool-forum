@@ -39,7 +39,6 @@ export default createStore({
         },
         APPEND_POST_TO_THREAD(state, {postId, threadId}) {
             const thread = state.sourceData.threads.find(thread => thread.id === threadId)
-            console.log(threadId)
             thread.posts.push(postId)
         }
     },
@@ -50,7 +49,6 @@ export default createStore({
             commit('APPEND_POST_TO_THREAD', {postId: post.id, threadId: post.threadId})
         },
         updateUser({commit}, user) {
-            console.log(user)
           commit('SET_USER', {user, userId: user.id})
         }
     },
