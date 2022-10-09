@@ -28,6 +28,12 @@ const routes = [
     }
   },
   {
+    path: '/category/:id',
+    name: 'Category',
+    props: true,
+    component: () => import('@/views/CategoryView')
+  },
+  {
     path: '/forum/:id',
     name: 'Forum',
     props: true,

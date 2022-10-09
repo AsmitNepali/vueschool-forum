@@ -3,7 +3,8 @@
     <div class="forum-list">
 
       <h2 class="list-title">
-        <a href="#">Forums</a>
+        <router-link v-if="categoryId" :to="{ name: 'Category', params: { id: categoryId }}">{{ title }}</router-link>
+        <span v-else>{{ title }}</span>
       </h2>
 
       <div class="forum-listing" v-for="forum in forums" :key="forum.id">
@@ -17,7 +18,7 @@
         <div class="threads-count">
           <p>
             <span class="count">{{ forum.threads?.length }}</span>
-            {{ forum.threads?.length > 1 ? 'threads' : 'thread' }}
+            {{ forumThreadsWord(forum) }}
           </p>
         </div>
 
@@ -29,18 +30,29 @@
 </template>
 
 <script>
-import sourceDate from '@/data.json'
 
 export default {
  props: {
    forums: {
      type: Array,
      required: true
+   },
+   title: {
+     type: String,
+     default: 'Forums'
+   },
+   categoryId: {
+     type: String,
+     required: false
    }
  },
   methods: {
-    forumsById(forumId) {
-      return sourceDate.forums.find(forum => forum.id === forumId)
+    forumThreadsWord(forum) {
+      if (forum.threads?.length) {
+        return forum.threads?.length > 1 ? 'threads' : 'thread'
+      } else {
+        return 'not threads'
+      }
     }
   }
 }
