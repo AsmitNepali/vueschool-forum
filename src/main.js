@@ -34,4 +34,5 @@ requireComponent.keys().forEach(fileName => {
         componentConfig.default || componentConfig
     )
 })
+
 forumApp.use(store).use(router).mount('#app')

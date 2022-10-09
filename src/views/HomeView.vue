@@ -1,20 +1,20 @@
 <template>
     <h1>Welcome To Forum</h1>
+  {{sourceData}}
     <CategoryList :categories="categories"/>
 </template>
 
 <script>
-import sourceData from '@/data.json'
 import CategoryList from '@/components/CategoryList'
-
+import {mapState} from 'vuex'
 export default {
   components: {
     CategoryList
   },
-  data () {
-    return {
-      categories: sourceData.categories
-    }
+  computed: {
+    ...mapState({
+      categories: state => state.sourceData.categories
+    })
   }
 }
 </script>
