@@ -1,6 +1,5 @@
 <template>
   <div class="col-full">
-
     <div class="thread-list">
 
       <h2 class="list-title">Threads</h2>
@@ -11,7 +10,7 @@
             <router-link :to="{name: 'ThreadShow', params: {id: thread.id}}">{{thread.title}}</router-link>
           </p>
           <p class="text-faded text-xsmall">
-            By <a href="#">{{userById(thread.userId).name}}</a>, {{ thread.publishedAt }}.
+            By <a href="#">{{userById(thread.userId).name}}</a>, <app-date :timestamp="thread.publishedAt"/>.
           </p>
         </div>
 
@@ -26,13 +25,14 @@
             <p class="text-xsmall">
               <a href="#">{{ userById(thread.userId).name }}</a>
             </p>
-            <p class="text-xsmall text-faded">{{ thread.publishedAt }}</p>
+            <p class="text-xsmall text-faded"><app-date :timestamp="thread.publishedAt"/></p>
           </div>
         </div>
       </div>
 
     </div>
   </div>
+
 </template>
 
 <script>
