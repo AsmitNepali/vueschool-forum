@@ -43,8 +43,10 @@ export default createStore({
         }
     },
     actions: {
-        createPost({commit}, post) {
+        createPost({commit,state}, post) {
             post.id = 'gggg' + Math.random()
+            post.userId = state.authId
+            post.publishedAt = Math.floor(Date.now() / 1000),
             commit('SET_POST', post)
             commit('APPEND_POST_TO_THREAD', {postId: post.id, threadId: post.threadId})
         },
