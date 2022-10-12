@@ -2,13 +2,6 @@ import {createStore} from 'vuex'
 import sourceDate from '@/data.json'
 import {findById, upsert} from "@/helpers"
 
-const makeAppendChildToParentMutation = ({parent, child}) => {
-    return (state, {childId, parentId}) =>  {
-        const resource = findById(state[parent], parentId)
-        resource[child] = resource[child] || []
-        resource[child].push(childId)
-    }
-}
 export default createStore({
     state: {
         ...sourceDate,
@@ -34,6 +27,25 @@ export default createStore({
                     return this.threads.length
                 }
             }
+        },
+        thread: state => {
+            return (id) => {
+                const thread = findById(state.threads, id)
+                return {
+                    ...thread,
+                    get author() {
+                        return findById(state.users, thread.userId)
+                    },
+                    get repliesCount() {
+                        return thread.posts.length - 1
+                    },
+                    get contributorsCount() {
+                        return thread.contributors.length
+                    },
+                }
+
+
+            }
         }
     },
     mutations: {
@@ -48,6 +60,7 @@ export default createStore({
             state.users[userIndex] = user
         },
         APPEND_POST_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'posts'}),
+        APPEND_CONTRIBUTOR_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'contributors'}),
 
         APPEND_THREAD_TO_FORUM(state, {forumId, threadId}) {
             const forum = findById(state.forums, forumId)
@@ -65,8 +78,9 @@ export default createStore({
             post.id = 'gggg' + Math.random()
             post.userId = state.authId
             post.publishedAt = Math.floor(Date.now() / 1000),
-            commit('SET_POST', post)
+                commit('SET_POST', post)
             commit('APPEND_POST_TO_THREAD', {childId: post.id, parentId: post.threadId})
+            commit('APPEND_CONTRIBUTOR_TO_THREAD', {childId: state.authId, parentId: post.threadId})
         },
         updateUser({commit}, user) {
             commit('SET_USER', {user, userId: user.id})
@@ -95,3 +109,13 @@ export default createStore({
     },
     modules: {}
 })
+
+function makeAppendChildToParentMutation({parent, child}) {
+    return (state, {childId, parentId}) => {
+        const resource = findById(state[parent], parentId)
+        resource[child] = resource[child] || []
+        if (!resource[child].includes(childId)) {
+            resource[child].push(childId)
+        }
+    }
+}
