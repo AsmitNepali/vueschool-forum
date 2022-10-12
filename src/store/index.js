@@ -2,6 +2,13 @@ import {createStore} from 'vuex'
 import sourceDate from '@/data.json'
 import {findById, upsert} from "@/helpers"
 
+const makeAppendChildToParentMutation = ({parent, child}) => {
+    return (state, {childId, parentId}) =>  {
+        const resource = findById(state[parent], parentId)
+        resource[child] = resource[child] || []
+        resource[child].push(childId)
+    }
+}
 export default createStore({
     state: {
         ...sourceDate,
@@ -30,22 +37,18 @@ export default createStore({
         }
     },
     mutations: {
-        SET_POST(state, {post}) {
+        SET_POST(state, post) {
             upsert(state.posts, post)
         },
-        SET_THREAD(state, {thread}) {
+        SET_THREAD(state, thread) {
             upsert(state.threads, thread)
         },
         SET_USER(state, {user, userId}) {
             const userIndex = state.users.findIndex(user => user.id === userId)
             state.users[userIndex] = user
+        },
+        APPEND_POST_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'posts'}),
 
-        },
-        APPEND_POST_TO_THREAD(state, {postId, threadId}) {
-            const thread = findById(state.threads, threadId)
-            thread.posts = thread.posts || []
-            thread.posts.push(postId)
-        },
         APPEND_THREAD_TO_FORUM(state, {forumId, threadId}) {
             const forum = findById(state.forums, forumId)
             forum.threads = forum.threads || []
@@ -63,7 +66,7 @@ export default createStore({
             post.userId = state.authId
             post.publishedAt = Math.floor(Date.now() / 1000),
             commit('SET_POST', post)
-            commit('APPEND_POST_TO_THREAD', {postId: post.id, threadId: post.threadId})
+            commit('APPEND_POST_TO_THREAD', {childId: post.id, parentId: post.threadId})
         },
         updateUser({commit}, user) {
             commit('SET_USER', {user, userId: user.id})
@@ -73,7 +76,6 @@ export default createStore({
             const userId = state.authId
             const publishedAt = Math.floor(Date.now() / 1000)
             const thread = {forumId, title, publishedAt, userId, id}
-
             commit('SET_THREAD', thread)
             commit('APPEND_THREAD_TO_FORUM', {forumId, threadId: thread.id})
             commit('APPEND_THREAD_TO_USER', {userId, threadId: thread.id})
@@ -82,13 +84,12 @@ export default createStore({
         },
 
         async updateThread({commit, state}, {title, text, id}) {
-
             const thread = findById(state.threads, id)
             const post = findById(state.posts, thread.posts[0])
             const newThread = {...thread, title}
             const newPost = {...post, text}
-            commit('SET_THREAD', {thread: newThread})
-            commit('SET_POST', {post: newPost})
+            commit('SET_THREAD', newThread)
+            commit('SET_POST', newPost)
             return newThread
         }
     },
