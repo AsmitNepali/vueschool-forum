@@ -12,6 +12,7 @@
 import PostList from '@/components/PostList'
 import PostEditor from '@/components/PostEditor'
 import {mapState} from "vuex"
+import {findById} from "@/helpers";
 
 export default {
   components: {
@@ -24,7 +25,7 @@ export default {
       required: true
     }
   },
-  data () {
+  data() {
     return {
       text: ''
     }
@@ -34,15 +35,15 @@ export default {
       threads: state => state.threads,
       posts: state => state.posts
     }),
-    thread () {
-      return this.threads.find(thread => thread.id === this.id)
+    thread() {
+      return findById(this.threads, this.id)
     },
-    threadPosts () {
+    threadPosts() {
       return this.posts.filter(post => post.threadId === this.id)
     }
   },
   methods: {
-    addPost (eventData) {
+    addPost(eventData) {
       const post = {
         ...eventData.post,
         threadId: this.id

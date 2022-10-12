@@ -5,6 +5,7 @@
 
 <script>
 import ForumList from "@/components/ForumList";
+import {findById} from "@/helpers";
 
 export default {
   components: {
@@ -18,12 +19,12 @@ export default {
   },
   computed: {
     category () {
-      return this.$store.state.categories.find(category => category.id === this.id)
+      return findById(this.$store.state.categories, this.id)
     }
   },
   methods: {
     getForumsForCategory(category) {
-      return this.sourceData.forums.filter(forum => forum.categoryId === category.id)
+      return this.$store.state.forums.filter(forum => forum.categoryId === category.id)
     }
   }
 }

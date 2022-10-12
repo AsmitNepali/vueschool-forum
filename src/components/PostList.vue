@@ -30,7 +30,7 @@
 
 <script>
 import sourceData from '@/data.json'
-
+import {findById} from "@/helpers";
 export default {
   data () {
     return {
@@ -45,7 +45,7 @@ export default {
   },
   methods: {
     userById (userId) {
-      return this.users.find(u => u.id === userId)
+      return findById(this.users, userId)
     }
   }
 }
