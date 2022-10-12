@@ -7,12 +7,13 @@
 
     <div class="form-group">
       <label for="thread_content">Content:</label>
-      <textarea v-model="form.text" id="thread_content" class="form-input" name="content" rows="8" cols="140"></textarea>
+      <textarea v-model="form.text" id="thread_content" class="form-input" name="content" rows="8"
+                cols="140"></textarea>
     </div>
 
     <div class="btn-group">
       <button @click="$emit('cancel')" class="btn btn-ghost">Cancel</button>
-      <button class="btn btn-blue" type="submit" name="Publish">Publish</button>
+      <button class="btn btn-blue" type="submit" name="Publish">{{ existing ? 'Update' : 'Publish' }}</button>
     </div>
   </form>
 </template>
@@ -37,8 +38,13 @@ export default {
       }
     }
   },
+  computed: {
+    existing() {
+      return !!this.title
+    }
+  },
   methods: {
-    save () {
+    save() {
       this.$emit('save', {...this.form})
     }
   }
