@@ -28,6 +28,12 @@ const routes = [
     }
   },
   {
+    path: '/forum/:forumId/thread/create',
+    name: 'ThreadCreate',
+    props: true,
+    component: () => import('@/views/ThreadCreateView')
+  },
+  {
     path: '/category/:id',
     name: 'Category',
     props: true,
