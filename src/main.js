@@ -4,6 +4,11 @@ import router from './router'
 import store from './store'
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
+import * as firebase from 'firebase/app'
+
+import firebaseConfig from "@/config/firebase"
+firebase.initializeApp(firebaseConfig);
+
 
 const forumApp = createApp(App)
 
@@ -36,3 +41,4 @@ requireComponent.keys().forEach(fileName => {
 })
 
 forumApp.use(store).use(router).mount('#app')
+
