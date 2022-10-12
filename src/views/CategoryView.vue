@@ -5,7 +5,6 @@
 
 <script>
 import ForumList from "@/components/ForumList";
-import {mapState} from "vuex";
 
 export default {
   components: {
@@ -18,9 +17,8 @@ export default {
     }
   },
   computed: {
-    ...mapState(['sourceData']),
     category () {
-      return this.sourceData.categories.find(category => category.id === this.id)
+      return this.$store.state.categories.find(category => category.id === this.id)
     }
   },
   methods: {

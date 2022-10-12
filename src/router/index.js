@@ -34,6 +34,12 @@ const routes = [
     component: () => import('@/views/ThreadCreateView')
   },
   {
+    path: '/thread/:id/edit',
+    name: 'ThreadEdit',
+    props: true,
+    component: () => import('@/views/ThreadEditView')
+  },
+  {
     path: '/category/:id',
     name: 'Category',
     props: true,

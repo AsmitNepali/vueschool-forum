@@ -5,15 +5,14 @@
 
 <script>
 import CategoryList from '@/components/CategoryList'
-import {mapState} from 'vuex'
 export default {
   components: {
     CategoryList
   },
   computed: {
-    ...mapState({
-      categories: state => state.sourceData.categories
-    })
+    categories() {
+      return this.$store.state.categories
+    }
   }
 }
 </script>

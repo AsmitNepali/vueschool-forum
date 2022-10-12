@@ -29,8 +29,8 @@ export default {
   },
   computed: {
     ...mapState({
-      threads: state => state.sourceData.threads,
-      posts: state => state.sourceData.posts
+      threads: state => state.threads,
+      posts: state => state.posts
     }),
     thread () {
       return this.threads.find(thread => thread.id === this.id)

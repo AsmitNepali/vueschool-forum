@@ -16,7 +16,6 @@
 
 <script>
 import ThreadList from "@/components/ThreadList";
-import {mapState} from "vuex";
 
 export default {
   components: {
@@ -29,12 +28,11 @@ export default {
     },
   },
   computed: {
-    ...mapState(['sourceData']),
     forum() {
-      return this.sourceData.forums.find(forum => forum.id === this.id)
+      return this.$store.state.forums.find(forum => forum.id === this.id)
     },
     threads() {
-      return this.sourceData.threads.filter(thread => thread.forumId === this.id)
+      return this.$store.state.threads.filter(thread => thread.forumId === this.id)
     }
   }
 }
