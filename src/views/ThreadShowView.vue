@@ -63,10 +63,12 @@ export default {
   async created() {
     // fetch the thread
     const thread = await this.$store.dispatch('fetchThread', {id: this.id})
+
+    // fetch the user
     this.$store.dispatch('fetchUser', {id: thread.userId})
 
-    thread.posts.forEach((postId) => {
-      const post = this.$store.dispatch('fetchPost', {id: postId})
+    thread.posts.forEach(async (postId) => {
+      const post = await this.$store.dispatch('fetchPost', {id: postId})
       this.$store.dispatch('fetchUser', {id: post.userId})
     })
   }

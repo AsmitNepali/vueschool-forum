@@ -1,6 +1,7 @@
 import {createStore} from 'vuex'
 import {findById, upsert} from "@/helpers"
 import {getFirestore, doc, onSnapshot} from "firebase/firestore";
+
 export default createStore({
     state: {
         categories: [],
@@ -58,6 +59,9 @@ export default createStore({
         }
     },
     mutations: {
+        SET_ITEM(state, {resource, item}) {
+            upsert(state[resource], item)
+        },
         SET_POST(state, post) {
             upsert(state.posts, post)
         },
@@ -136,15 +140,21 @@ export default createStore({
             })
         },
 
-        fetchPost({commit}, {id}) {
+        fetchPost({dispatch}, {id}) {
+            return dispatch('fetchItem', {resource: "posts", id})
+        },
+
+        fetchItem({commit}, {resource, id}) {
             return new Promise((resolve)=> {
                 onSnapshot(doc(getFirestore(), "posts", id), (doc) => {
-                    const post = {...doc.data(), id: doc.id}
-                    commit('SET_POST', post)
-                    resolve(post)
+                    const item = {...doc.data(), id: doc.id}
+                    commit('SET_ITEM', {resource,id,item})
+                    resolve(item)
                 })
             })
         },
+
+
     },
     modules: {}
 })
