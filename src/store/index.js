@@ -1,6 +1,6 @@
 import {createStore} from 'vuex'
 import {findById, upsert} from "@/helpers"
-
+import {getFirestore, doc, onSnapshot} from "firebase/firestore";
 export default createStore({
     state: {
         categories: [],
@@ -114,7 +114,37 @@ export default createStore({
             commit('SET_THREAD', newThread)
             commit('SET_POST', newPost)
             return newThread
-        }
+        },
+
+        fetchThread({commit}, {id}) {
+            return new Promise((resolve)=> {
+                onSnapshot(doc(getFirestore(), "threads", id), (thread_doc) => {
+                    const thread = {...thread_doc.data(), id: thread_doc.id}
+                    commit('SET_THREAD', thread)
+                    resolve(thread)
+                })
+            })
+        },
+
+        fetchUser({commit}, {id}) {
+            return new Promise((resolve)=> {
+                onSnapshot(doc(getFirestore(), "users", id), (doc) => {
+                    const user = {...doc.data(), id: doc.id}
+                    commit('SET_USER', user)
+                    resolve(user)
+                })
+            })
+        },
+
+        fetchPost({commit}, {id}) {
+            return new Promise((resolve)=> {
+                onSnapshot(doc(getFirestore(), "posts", id), (doc) => {
+                    const post = {...doc.data(), id: doc.id}
+                    commit('SET_POST', post)
+                    resolve(post)
+                })
+            })
+        },
     },
     modules: {}
 })
