@@ -62,16 +62,6 @@ export default createStore({
         SET_ITEM(state, {resource, item}) {
             upsert(state[resource], item)
         },
-        SET_POST(state, post) {
-            upsert(state.posts, post)
-        },
-        SET_THREAD(state, thread) {
-            upsert(state.threads, thread)
-        },
-        SET_USER(state, user) {
-            upsert(state.users, user)
-
-        },
         APPEND_POST_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'posts'}),
         APPEND_CONTRIBUTOR_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'contributors'}),
 
@@ -91,19 +81,19 @@ export default createStore({
             post.id = 'gggg' + Math.random()
             post.userId = state.authId
             post.publishedAt = Math.floor(Date.now() / 1000),
-                commit('SET_POST', post)
+                commit('SET_ITEM', {resource: 'posts', item: post})
             commit('APPEND_POST_TO_THREAD', {childId: post.id, parentId: post.threadId})
             commit('APPEND_CONTRIBUTOR_TO_THREAD', {childId: state.authId, parentId: post.threadId})
         },
         updateUser({commit}, user) {
-            commit('SET_USER', {user, userId: user.id})
+            commit('SET_ITEM', {resource:'users', item:user})
         },
         async createThread({commit, state, dispatch}, {text, title, forumId}) {
             const id = 'gggg' + Math.random()
             const userId = state.authId
             const publishedAt = Math.floor(Date.now() / 1000)
             const thread = {forumId, title, publishedAt, userId, id}
-            commit('SET_THREAD', thread)
+            commit('SET_ITEM', {resource: 'threads', item: thread})
             commit('APPEND_THREAD_TO_FORUM', {forumId, threadId: thread.id})
             commit('APPEND_THREAD_TO_USER', {userId, threadId: thread.id})
             dispatch('createPost', {text, threadId: id})
@@ -115,29 +105,17 @@ export default createStore({
             const post = findById(state.posts, thread.posts[0])
             const newThread = {...thread, title}
             const newPost = {...post, text}
-            commit('SET_THREAD', newThread)
-            commit('SET_POST', newPost)
+            commit('SET_ITEM', {resource:'threads', item:newThread})
+            commit('SET_ITEM', {resource:'posts', item:newPost})
             return newThread
         },
 
-        fetchThread({commit}, {id}) {
-            return new Promise((resolve)=> {
-                onSnapshot(doc(getFirestore(), "threads", id), (thread_doc) => {
-                    const thread = {...thread_doc.data(), id: thread_doc.id}
-                    commit('SET_THREAD', thread)
-                    resolve(thread)
-                })
-            })
+        fetchThread({dispatch}, {id}) {
+            return dispatch('fetchItem', {resource: "threads", id})
         },
 
-        fetchUser({commit}, {id}) {
-            return new Promise((resolve)=> {
-                onSnapshot(doc(getFirestore(), "users", id), (doc) => {
-                    const user = {...doc.data(), id: doc.id}
-                    commit('SET_USER', user)
-                    resolve(user)
-                })
-            })
+        fetchUser({dispatch}, {id}) {
+            return dispatch('fetchItem', {resource: "users", id})
         },
 
         fetchPost({dispatch}, {id}) {
@@ -145,10 +123,10 @@ export default createStore({
         },
 
         fetchItem({commit}, {resource, id}) {
-            return new Promise((resolve)=> {
-                onSnapshot(doc(getFirestore(), "posts", id), (doc) => {
+            return new Promise((resolve) => {
+                onSnapshot(doc(getFirestore(), resource, id), (doc) => {
                     const item = {...doc.data(), id: doc.id}
-                    commit('SET_ITEM', {resource,id,item})
+                    commit('SET_ITEM', {resource, id, item})
                     resolve(item)
                 })
             })
