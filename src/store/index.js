@@ -86,7 +86,7 @@ export default createStore({
             commit('APPEND_CONTRIBUTOR_TO_THREAD', {childId: state.authId, parentId: post.threadId})
         },
         updateUser({commit}, user) {
-            commit('SET_ITEM', {resource:'users', item:user})
+            commit('SET_ITEM', {resource: 'users', item: user})
         },
         async createThread({commit, state, dispatch}, {text, title, forumId}) {
             const id = 'gggg' + Math.random()
@@ -105,8 +105,8 @@ export default createStore({
             const post = findById(state.posts, thread.posts[0])
             const newThread = {...thread, title}
             const newPost = {...post, text}
-            commit('SET_ITEM', {resource:'threads', item:newThread})
-            commit('SET_ITEM', {resource:'posts', item:newPost})
+            commit('SET_ITEM', {resource: 'threads', item: newThread})
+            commit('SET_ITEM', {resource: 'posts', item: newPost})
             return newThread
         },
 
@@ -121,7 +121,15 @@ export default createStore({
         fetchPost({dispatch}, {id}) {
             return dispatch('fetchItem', {resource: "posts", id})
         },
-
+        fetchThreads({dispatch}, {ids}) {
+            return dispatch('fetchItems', {resource: 'threads', ids})
+        },
+        fetchPosts({dispatch}, {ids}) {
+            return dispatch('fetchItems', {resource: 'posts', ids})
+        },
+        fetchUsers({dispatch}, {ids}) {
+            return dispatch('fetchItems', {resource: 'users', ids})
+        },
         fetchItem({commit}, {resource, id}) {
             return new Promise((resolve) => {
                 onSnapshot(doc(getFirestore(), resource, id), (doc) => {
@@ -131,8 +139,9 @@ export default createStore({
                 })
             })
         },
-
-
+        fetchItems({dispatch}, {ids, resource}) {
+            return Promise.all(ids.map(id => dispatch('fetchItem', {resource, id})))
+        }
     },
     modules: {}
 })
