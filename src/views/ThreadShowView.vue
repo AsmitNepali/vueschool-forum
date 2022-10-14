@@ -6,7 +6,7 @@
     <p>
       By <a href="#" class="link-unstyled">{{ thread.author?.name }}</a>,
       <AppDate :timestamp="thread.publishedAt"/>
-      .
+onec      .
       <span style="float:right; margin-top: 2px;" class="hide-mobile text-faded text-small">{{ thread.repliesCount }} replies by {{
           thread.contributorsCount
         }} contributors</span>
@@ -72,7 +72,7 @@ export default {
 
     // fetch the users associated with posts
     const users = posts.map(post => post.userId)
-    this.$store.dispatch('fetchUsers', users)
+    this.$store.dispatch('fetchUsers', {ids: users})
 
   }
 }

@@ -13,6 +13,9 @@ export default {
     categories() {
       return this.$store.state.categories
     }
+  },
+  beforeCreate() {
+    this.$store.dispatch('fetchAllCategories')
   }
 }
 </script>

@@ -9,7 +9,7 @@
 
       <div class="forum-listing" v-for="forum in forums" :key="forum.id">
         <div class="forum-details">
-          <router-link :to="{ name: 'Forum', params: { id: forum.id } }" class="text-xlarge" href="forum.html">
+          <router-link :to="{ name: 'Forum', params: { id: forum.id } }" class="text-xlarge">
             {{ forum.name }}
           </router-link>
           <p>{{ forum.description }}</p>

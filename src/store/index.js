@@ -1,6 +1,6 @@
 import {createStore} from 'vuex'
 import {findById, upsert} from "@/helpers"
-import {getFirestore, doc, onSnapshot} from "firebase/firestore";
+import {getFirestore, doc, onSnapshot, query, collection} from "firebase/firestore";
 
 export default createStore({
     state: {
@@ -40,7 +40,6 @@ export default createStore({
         thread: state => {
             return (id) => {
                 const thread = findById(state.threads, id)
-
                 return {
                     ...thread,
                     get author() {
@@ -110,7 +109,7 @@ export default createStore({
             return newThread
         },
 
-        fetchThread({dispatch}, {id}) {
+        async fetchThread({dispatch}, {id}) {
             return dispatch('fetchItem', {resource: "threads", id})
         },
 
@@ -121,15 +120,27 @@ export default createStore({
         fetchPost({dispatch}, {id}) {
             return dispatch('fetchItem', {resource: "posts", id})
         },
+
+        fetchCategory({dispatch}, {id}) {
+            return dispatch('fetchItem', {resource: 'categories', id})
+        },
+
+        fetchForum({dispatch}, {id}) {
+            return dispatch('fetchItem', {resource: 'forums', id})
+        },
+
         fetchThreads({dispatch}, {ids}) {
             return dispatch('fetchItems', {resource: 'threads', ids})
         },
+
         fetchPosts({dispatch}, {ids}) {
             return dispatch('fetchItems', {resource: 'posts', ids})
         },
+
         fetchUsers({dispatch}, {ids}) {
             return dispatch('fetchItems', {resource: 'users', ids})
         },
+
         fetchItem({commit}, {resource, id}) {
             return new Promise((resolve) => {
                 onSnapshot(doc(getFirestore(), resource, id), (doc) => {
@@ -139,8 +150,23 @@ export default createStore({
                 })
             })
         },
+
         fetchItems({dispatch}, {ids, resource}) {
             return Promise.all(ids.map(id => dispatch('fetchItem', {resource, id})))
+        },
+
+        fetchAllCategories({commit}) {
+            console.log('🔥','🏷', 'all')
+            return new Promise((resolve) => {
+                onSnapshot(query(collection(getFirestore(),'categories')), (querySnapshot) =>{
+                    const categories = querySnapshot.forEach(doc => {
+                        const item = {id: doc.id, ...doc.data()}
+                        commit('SET_ITEM', {resource: 'categories', item})
+                        return item
+                    })
+                    resolve(categories)
+                })
+            })
         }
     },
     modules: {}
