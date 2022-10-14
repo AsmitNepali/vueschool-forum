@@ -4,8 +4,12 @@
       <router-link :to="{name: 'ThreadEdit', id: this.id}" class="btn-green btn-small">Edit</router-link>
     </h1>
     <p>
-      By <a href="#" class="link-unstyled">{{thread.author.name}}</a>, <AppDate :timestamp="thread.publishedAt"/>.
-      <span style="float:right; margin-top: 2px;" class="hide-mobile text-faded text-small">{{thread.repliesCount}} replies by {{ thread.contributorsCount }} contributors</span>
+      By <a href="#" class="link-unstyled">{{ thread.author?.name }}</a>,
+      <AppDate :timestamp="thread.publishedAt"/>
+      .
+      <span style="float:right; margin-top: 2px;" class="hide-mobile text-faded text-small">{{ thread.repliesCount }} replies by {{
+          thread.contributorsCount
+        }} contributors</span>
     </p>
     <post-list :posts="threadPosts"></post-list>
     <post-editor @save="addPost"></post-editor>
@@ -17,6 +21,8 @@ import PostList from '@/components/PostList'
 import PostEditor from '@/components/PostEditor'
 import {mapState} from "vuex"
 import AppDate from "@/components/AppDate";
+
+import {getFirestore, doc, onSnapshot} from "firebase/firestore";
 
 export default {
   components: {
@@ -55,6 +61,46 @@ export default {
       }
       this.$store.dispatch('createPost', post)
     }
+  },
+  created() {
+    const db = getFirestore()
+    // fetch the thread
+    onSnapshot(doc(db, "threads", this.id), (thread_doc) => {
+      const thread = {...thread_doc.data(), id: thread_doc.id}
+      this.$store.commit('SET_THREAD', thread)
+
+      onSnapshot(doc(db, "users", thread.userId), (user_doc) => {
+        const user = {...user_doc.data(), id: user_doc.id}
+        this.$store.commit('SET_USER', user)
+      });
+
+      thread.posts.forEach(postId => {
+        onSnapshot(doc(db, "posts", postId), (post_doc) => {
+          const post = {...post_doc.data(), id: post_doc.id}
+          this.$store.commit('SET_POST', post)
+
+          onSnapshot(doc(db, "users", post.userId), (post_user_doc) => {
+            const user = {...post_user_doc.data(), id: post_user_doc.id}
+            this.$store.commit('SET_USER', user)
+          })
+        })
+      })
+
+    });
+
+    // fetch the user
+    // onSnapshot(doc(db, "users", ''), (doc) => {
+    //   const user = {...doc.data(), id: doc.id}
+    //   this.$store.commit('SET_USER', user)
+    //   console.log(user)
+    // });
+    // fetch the posts
+    // this.thread.posts.forEach(postId => {
+    //   getDoc(doc(db, "posts", `${postId}`)).then(doc => {
+    //     const user = {...doc.data(), id: postId}
+    //     this.$store.commit('SET_POST', user)
+    //   })
+    // })
   }
 }
 </script>
