@@ -40,6 +40,7 @@ export default createStore({
         thread: state => {
             return (id) => {
                 const thread = findById(state.threads, id)
+                if(!thread) return {}
                 return {
                     ...thread,
                     get author() {
@@ -130,7 +131,11 @@ export default createStore({
         },
 
         fetchThreads({dispatch}, {ids}) {
-            return dispatch('fetchItems', {resource: 'threads', ids})
+            return dispatch('fetchItems', {ids, resource: 'threads'})
+        },
+
+        fetchForums({dispatch}, {ids}) {
+            return dispatch('fetchItems', {resource: 'forums', ids})
         },
 
         fetchPosts({dispatch}, {ids}) {
@@ -159,7 +164,9 @@ export default createStore({
             console.log('🔥','🏷', 'all')
             return new Promise((resolve) => {
                 onSnapshot(query(collection(getFirestore(),'categories')), (querySnapshot) =>{
-                    const categories = querySnapshot.forEach(doc => {
+                    const categories = []
+                    querySnapshot.forEach(doc => {
+                        categories.push({id: doc.id, ...doc.data()})
                         const item = {id: doc.id, ...doc.data()}
                         commit('SET_ITEM', {resource: 'categories', item})
                         return item
@@ -167,6 +174,7 @@ export default createStore({
                     resolve(categories)
                 })
             })
+
         }
     },
     modules: {}

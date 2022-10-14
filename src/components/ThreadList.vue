@@ -1,11 +1,10 @@
 <template>
   <div class="col-full">
     <div class="thread-list">
-
       <h2 class="list-title">Threads</h2>
       <div v-for="thread in threads" :key="thread.id" class="thread">
         <div>
-          <p>
+          <p v-if="thread.id">
             <router-link :to="{name: 'ThreadShow', params: {id: thread.id}}">{{ thread.title }}
             </router-link>
           </p>
@@ -40,25 +39,27 @@
 </template>
 
 <script>
-import sourceData from '@/data.json'
 import {findById} from "@/helpers";
 
 export default {
   props: {
     threads: {
-      type: Array,
-      required: true
+      type: Array
     }
   },
   data() {
     return {
-      posts: sourceData.posts,
-      users: sourceData.users
+      posts: this.$store.state.posts,
+      users: this.$store.state.users
     }
   },
   methods: {
     userById(userId) {
       return findById(this.users, userId) || {}
+    },
+    showThread(thread) {
+
+      console.log(thread)
     }
   }
 }

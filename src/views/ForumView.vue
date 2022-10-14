@@ -33,8 +33,9 @@ export default {
       return findById(this.$store.state.forums, this.id)
     },
     threads() {
-      if(!this.forum) return []
+      if (!this.forum) return []
       return this.forum.threads.map(threadId => this.$store.getters.thread(threadId))
+
     }
   },
   async created() {
