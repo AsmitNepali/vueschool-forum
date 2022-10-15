@@ -1,5 +1,15 @@
 import {findById} from "@/helpers";
-import {collection, doc, arrayUnion,writeBatch, serverTimestamp, getFirestore, onSnapshot, query} from "firebase/firestore";
+import {
+    collection,
+    doc,
+    arrayUnion,
+    writeBatch,
+    serverTimestamp,
+    increment,
+    getFirestore,
+    onSnapshot,
+    query
+} from "firebase/firestore";
 
 export default {
     async createPost({commit, state}, post) {
@@ -9,10 +19,14 @@ export default {
         const batch = writeBatch(db)
         const postRef = doc(db, 'posts', post.threadId)
         const threadRef = doc(db, 'threads', post.threadId)
+        const userRef = doc(db, 'threads', state.authId)
         batch.set(postRef, post)
         batch.update(threadRef, {
             posts: arrayUnion(postRef.id),
             contributors: arrayUnion(state.authId)
+        })
+        batch.update(userRef, {
+            postCount: increment(1)
         })
         await batch.commit()
 
@@ -30,8 +44,8 @@ export default {
         const batch = writeBatch(db)
         const threadRef = doc(db, 'threads', userId)
         const thread = {forumId, title, publishedAt, userId, id: threadRef.id}
-        const userRef = doc(db, 'users',userId)
-        const forumRef = doc(db, 'forums',forumId)
+        const userRef = doc(db, 'users', userId)
+        const forumRef = doc(db, 'forums', forumId)
 
         batch.set(threadRef, thread)
         batch.update(userRef, {
@@ -53,8 +67,26 @@ export default {
     async updateThread({commit, state}, {title, text, id}) {
         const thread = findById(state.threads, id)
         const post = findById(state.posts, thread.posts[0])
-        const newThread = {...thread, title}
-        const newPost = {...post, text}
+        let newThread = {...thread, title}
+        let newPost = {...post, text}
+        const db = getFirestore()
+        const batch = writeBatch(db)
+        const threadRef = doc(db, 'threads', id)
+        const postRef = doc(db, 'posts', post.id)
+        batch.update(threadRef, newThread)
+        batch.update(postRef, newPost)
+        await batch.commit()
+        newThread = await threadRef.get()
+        newThread = {
+            ... newThread.data(),
+            id: newThread.id
+        }
+        newPost = await postRef.get()
+        newPost = {
+            ... newPost.data(),
+            id: newPost.id
+        }
+
         commit('SET_ITEM', {resource: 'threads', item: newThread})
         commit('SET_ITEM', {resource: 'posts', item: newPost})
         return newThread
