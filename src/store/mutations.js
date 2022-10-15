@@ -1,9 +1,9 @@
-import {findById, upsert} from "@/helpers";
+import {findById, upsert, docToResource} from "@/helpers";
 
 export default {
 
     SET_ITEM(state, {resource, item}) {
-        upsert(state[resource], item)
+        upsert(state[resource], docToResource(item))
     },
     APPEND_POST_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'posts'}),
     APPEND_CONTRIBUTOR_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'contributors'}),

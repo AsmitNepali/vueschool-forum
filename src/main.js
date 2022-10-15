@@ -5,6 +5,8 @@ import store from './store'
 import upperFirst from 'lodash/upperFirst'
 import camelCase from 'lodash/camelCase'
 import * as firebase from 'firebase/app'
+import FontAwesome from  '@/plugins/FontAwesome'
+
 
 import firebaseConfig from "@/config/firebase"
 firebase.initializeApp(firebaseConfig);
@@ -39,6 +41,5 @@ requireComponent.keys().forEach(fileName => {
         componentConfig.default || componentConfig
     )
 })
-
-forumApp.use(store).use(router).mount('#app')
+forumApp.use(store).use(router).use(FontAwesome).mount('#app')
 

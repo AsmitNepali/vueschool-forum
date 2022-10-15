@@ -1,4 +1,4 @@
-import {findById} from "@/helpers";
+import {docToResource, findById} from "@/helpers";
 import {
     collection,
     doc,
@@ -76,20 +76,10 @@ export default {
         batch.update(threadRef, newThread)
         batch.update(postRef, newPost)
         await batch.commit()
-        newThread = await threadRef.get()
-        newThread = {
-            ... newThread.data(),
-            id: newThread.id
-        }
-        newPost = await postRef.get()
-        newPost = {
-            ... newPost.data(),
-            id: newPost.id
-        }
 
         commit('SET_ITEM', {resource: 'threads', item: newThread})
         commit('SET_ITEM', {resource: 'posts', item: newPost})
-        return newThread
+        return docToResource(newThread)
     },
 
     async fetchThread({dispatch}, {id}) {
