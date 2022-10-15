@@ -13,7 +13,7 @@ const routes = [
     props: true,
     component: () => import('@/views/ThreadShowView'),
     // beforeEnter (routeTo, routeFrom, next) {
-    //   const threadExists = sourceData.threads.find(thread => thread.id === routeTo.params.id)
+    //   const threadExists = this.$store.state.threads.find(thread => thread.id === routeTo.params.id)
     //   if (threadExists) {
     //     next()
     //   } else {

@@ -1,17 +1,23 @@
 import {findById} from "@/helpers";
-import {collection, doc, addDoc, updateDoc, arrayUnion, getFirestore, onSnapshot, query} from "firebase/firestore";
+import {collection, doc, arrayUnion,writeBatch, getFirestore, onSnapshot, query} from "firebase/firestore";
 
 export default {
     async createPost({commit, state}, post) {
         post.userId = state.authId
         post.publishedAt = Math.floor(Date.now() / 1000)
-        const newPost = await addDoc(collection(getFirestore(), 'posts'),{post})
-        await updateDoc(doc(getFirestore(),'threads', post.threadId),{
-            posts: arrayUnion(newPost.id),
+        const db = getFirestore()
+        const batch = writeBatch(db)
+        const postRef = doc(db, 'posts', post.threadId)
+        const threadRef = doc(db, 'threads', post.threadId)
+        batch.set(postRef, post)
+        batch.update(threadRef, {
+            posts: arrayUnion(postRef.id),
             contributors: arrayUnion(state.authId)
         })
-        commit('SET_ITEM', {resource: 'posts', item: {...post, id: newPost.id}})
-        commit('APPEND_POST_TO_THREAD', {childId: newPost.id, parentId: post.threadId})
+        await batch.commit()
+
+        commit('SET_ITEM', {resource: 'posts', item: {...post, id: postRef.id}})
+        commit('APPEND_POST_TO_THREAD', {childId: postRef.id, parentId: post.threadId})
         commit('APPEND_CONTRIBUTOR_TO_THREAD', {childId: state.authId, parentId: post.threadId})
     },
     updateUser({commit}, user) {
