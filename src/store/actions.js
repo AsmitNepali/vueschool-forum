@@ -24,15 +24,30 @@ export default {
         commit('SET_ITEM', {resource: 'users', item: user})
     },
     async createThread({commit, state, dispatch}, {text, title, forumId}) {
-        const id = 'gggg' + Math.random()
         const userId = state.authId
-        const publishedAt = Math.floor(Date.now() / 1000)
-        const thread = {forumId, title, publishedAt, userId, id}
+        const publishedAt = serverTimestamp()
+        const db = getFirestore()
+        const batch = writeBatch(db)
+        const threadRef = doc(db, 'threads', userId)
+        const thread = {forumId, title, publishedAt, userId, id: threadRef.id}
+        const userRef = doc(db, 'users',userId)
+        const forumRef = doc(db, 'forums',forumId)
+
+        batch.set(threadRef, thread)
+        batch.update(userRef, {
+            threads: arrayUnion(threadRef.id)
+        })
+        batch.update(forumRef, {
+            threads: arrayUnion(threadRef.id)
+        })
+
+        await batch.commit()
+
         commit('SET_ITEM', {resource: 'threads', item: thread})
-        commit('APPEND_THREAD_TO_FORUM', {forumId, threadId: thread.id})
-        commit('APPEND_THREAD_TO_USER', {userId, threadId: thread.id})
-        dispatch('createPost', {text, threadId: id})
-        return findById(state.threads, id)
+        commit('APPEND_THREAD_TO_FORUM', {forumId, threadId: threadRef.id})
+        commit('APPEND_THREAD_TO_USER', {userId, threadId: threadRef.id})
+        await dispatch('createPost', {text, threadId: threadRef.id})
+        return findById(state.threads, threadRef.id)
     },
 
     async updateThread({commit, state}, {title, text, id}) {
