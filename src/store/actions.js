@@ -1,10 +1,10 @@
 import {findById} from "@/helpers";
-import {collection, doc, arrayUnion,writeBatch, getFirestore, onSnapshot, query} from "firebase/firestore";
+import {collection, doc, arrayUnion,writeBatch, serverTimestamp, getFirestore, onSnapshot, query} from "firebase/firestore";
 
 export default {
     async createPost({commit, state}, post) {
         post.userId = state.authId
-        post.publishedAt = Math.floor(Date.now() / 1000)
+        post.publishedAt = serverTimestamp()
         const db = getFirestore()
         const batch = writeBatch(db)
         const postRef = doc(db, 'posts', post.threadId)
