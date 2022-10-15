@@ -6,7 +6,7 @@
     <p>
       By <a href="#" class="link-unstyled">{{ thread.author?.name }}</a>,
       <AppDate :timestamp="thread.publishedAt"/>
-onec      .
+      onec .
       <span style="float:right; margin-top: 2px;" class="hide-mobile text-faded text-small">{{ thread.repliesCount }} replies by {{
           thread.contributorsCount
         }} contributors</span>
@@ -19,7 +19,7 @@ onec      .
 <script>
 import PostList from '@/components/PostList'
 import PostEditor from '@/components/PostEditor'
-import {mapState} from "vuex"
+import {mapActions, mapState} from "vuex"
 import AppDate from "@/components/AppDate";
 
 export default {
@@ -52,27 +52,25 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['fetchThread', 'createPost', 'fetchUser', 'fetchPosts', 'fetchUsers']),
     addPost(eventData) {
       const post = {
         ...eventData.post,
         threadId: this.id
       }
-      this.$store.dispatch('createPost', post)
+      this.createPost(post)
     }
   },
   async created() {
     // fetch the thread
-    const thread = await this.$store.dispatch('fetchThread', {id: this.id})
-
-    // fetch the user
-    this.$store.dispatch('fetchUser', {id: thread.userId})
+    const thread = await this.fetchThread({id: this.id})
 
     // fetch the posts
-    const posts = await this.$store.dispatch('fetchPosts', {ids: thread.posts})
+    const posts = await this.fetchPosts({ids: thread.posts})
 
     // fetch the users associated with posts
-    const users = posts.map(post => post.userId)
-    this.$store.dispatch('fetchUsers', {ids: users})
+    const users = posts.map(post => post.userId).concat(thread.userId)
+    this.fetchUsers({ids: users})
 
   }
 }

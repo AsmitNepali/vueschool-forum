@@ -1,7 +1,7 @@
 <template>
   <div class="col-full push-top">
 
-    <h1>Create new thread in <i>{{ forum.name }}</i></h1>
+    <h1 v-if="forum">Create new thread in <i>{{ forum.name }}</i></h1>
     <ThreadEditor @save="save" @cancel="cancel"/>
   </div>
 </template>
@@ -9,6 +9,8 @@
 <script>
 import ThreadEditor from "@/components/ThreadEditor";
 import {findById} from "@/helpers";
+import {mapActions} from "vuex";
+
 export default {
   components: {
     ThreadEditor
@@ -31,17 +33,21 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['createThread', 'fetchForum']),
     async save({text, title}) {
-      const thread = await this.$store.dispatch('createThread', {
+      const thread = await this.createThread({
         forumId: this.forum.id,
         title,
         text
       })
       this.$router.push({name: 'ThreadShow', params: {id: thread.id}})
     },
-    cancel () {
-      this.$router.push({ name: 'Forum', params: {id: this.forumId}})
+    cancel() {
+      this.$router.push({name: 'Forum', params: {id: this.forumId}})
     }
+  },
+  created() {
+    this.fetchForum({id: this.forumId})
   }
 }
 </script>
