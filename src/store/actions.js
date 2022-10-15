@@ -1,13 +1,17 @@
 import {findById} from "@/helpers";
-import {collection, doc, getFirestore, onSnapshot, query} from "firebase/firestore";
+import {collection, doc, addDoc, updateDoc, arrayUnion, getFirestore, onSnapshot, query} from "firebase/firestore";
 
 export default {
-    createPost({commit, state}, post) {
-        post.id = 'gggg' + Math.random()
+    async createPost({commit, state}, post) {
         post.userId = state.authId
-        post.publishedAt = Math.floor(Date.now() / 1000),
-            commit('SET_ITEM', {resource: 'posts', item: post})
-        commit('APPEND_POST_TO_THREAD', {childId: post.id, parentId: post.threadId})
+        post.publishedAt = Math.floor(Date.now() / 1000)
+        const newPost = await addDoc(collection(getFirestore(), 'posts'),{post})
+        await updateDoc(doc(getFirestore(),'threads', post.threadId),{
+            posts: arrayUnion(newPost.id),
+            contributors: arrayUnion(state.authId)
+        })
+        commit('SET_ITEM', {resource: 'posts', item: {...post, id: newPost.id}})
+        commit('APPEND_POST_TO_THREAD', {childId: newPost.id, parentId: post.threadId})
         commit('APPEND_CONTRIBUTOR_TO_THREAD', {childId: state.authId, parentId: post.threadId})
     },
     updateUser({commit}, user) {
@@ -39,37 +43,23 @@ export default {
         return dispatch('fetchItem', {resource: "threads", id})
     },
 
-    fetchUser({dispatch}, {id}) {
-        return dispatch('fetchItem', {resource: "users", id})
-    },
+    fetchUser: ({dispatch}, {id}) => dispatch('fetchItem', {resource: "users", id}),
 
-    fetchPost({dispatch}, {id}) {
-        return dispatch('fetchItem', {resource: "posts", id})
-    },
+    fetchAuthUser: ({dispatch, state}) => dispatch('fetchItem', {resource: "users", id: state.authId}),
 
-    fetchCategory({dispatch}, {id}) {
-        return dispatch('fetchItem', {resource: 'categories', id})
-    },
+    fetchPost: ({dispatch}, {id}) => dispatch('fetchItem', {resource: "posts", id}),
 
-    fetchForum({dispatch}, {id}) {
-        return dispatch('fetchItem', {resource: 'forums', id})
-    },
+    fetchCategory: ({dispatch}, {id}) => dispatch('fetchItem', {resource: 'categories', id}),
 
-    fetchThreads({dispatch}, {ids}) {
-        return dispatch('fetchItems', {ids, resource: 'threads'})
-    },
+    fetchForum: ({dispatch}, {id}) => dispatch('fetchItem', {resource: 'forums', id}),
 
-    fetchForums({dispatch}, {ids}) {
-        return dispatch('fetchItems', {resource: 'forums', ids})
-    },
+    fetchThreads: ({dispatch}, {ids}) => dispatch('fetchItems', {ids, resource: 'threads'}),
 
-    fetchPosts({dispatch}, {ids}) {
-        return dispatch('fetchItems', {resource: 'posts', ids})
-    },
+    fetchForums: ({dispatch}, {ids}) => dispatch('fetchItems', {resource: 'forums', ids}),
 
-    fetchUsers({dispatch}, {ids}) {
-        return dispatch('fetchItems', {resource: 'users', ids})
-    },
+    fetchPosts: ({dispatch}, {ids}) => dispatch('fetchItems', {resource: 'posts', ids}),
+
+    fetchUsers: ({dispatch}, {ids}) => dispatch('fetchItems', {resource: 'users', ids}),
 
     fetchItem({commit}, {resource, id}) {
         return new Promise((resolve) => {
@@ -79,11 +69,10 @@ export default {
                 resolve(item)
             })
         })
-    },
+    }
+    ,
 
-    fetchItems({dispatch}, {ids, resource}) {
-        return Promise.all(ids.map(id => dispatch('fetchItem', {resource, id})))
-    },
+    fetchItems: ({dispatch}, {ids, resource}) => Promise.all(ids.map(id => dispatch('fetchItem', {resource, id}))),
 
     fetchAllCategories({commit}) {
         console.log('🔥', '🏷', 'all')
