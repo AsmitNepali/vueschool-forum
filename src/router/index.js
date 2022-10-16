@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PageHome from '@/views/HomeView'
+// import store from "@/store";
 
 const routes = [
   {
@@ -84,5 +85,7 @@ const router = createRouter({
     return scroll
   }
 })
-
+// router.beforeEach(() => {
+//   store.dispatch('unsubscribeAllSnapshots')
+// })
 export default router

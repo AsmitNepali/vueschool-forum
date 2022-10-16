@@ -5,6 +5,12 @@ export default {
     SET_ITEM(state, {resource, item}) {
         upsert(state[resource], docToResource(item))
     },
+    APPEND_UNSUBSCRIBE(state, {unsubscribe}) {
+        state.ubsubscribes.push(unsubscribe)
+    },
+    CLEAR_ALL_UNSUBSCRIBES(state,){
+        state.ubsubscribes = []
+    },
     APPEND_POST_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'posts'}),
     APPEND_CONTRIBUTOR_TO_THREAD: makeAppendChildToParentMutation({parent: 'threads', child: 'contributors'}),
 

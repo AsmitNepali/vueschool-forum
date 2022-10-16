@@ -37,6 +37,23 @@ export default {
     updateUser({commit}, user) {
         commit('SET_ITEM', {resource: 'users', item: user})
     },
+    async updatePost({commit, state}, {text, id}) {
+
+        const post = {
+            text,
+            edited: {
+                at: serverTimestamp(),
+                by: state.authId,
+                moderated: false
+            }
+        }
+        const db = getFirestore()
+        const batch = writeBatch(db)
+        const postRef = doc(db, 'posts', id)
+        batch.update(postRef, post)
+        await batch.commit()
+        commit('SET_ITEM', {resource: 'posts', item: post})
+    },
     async createThread({commit, state, dispatch}, {text, title, forumId}) {
         const userId = state.authId
         const publishedAt = serverTimestamp()
@@ -106,16 +123,23 @@ export default {
 
     fetchItem({commit}, {resource, id}) {
         return new Promise((resolve) => {
-            onSnapshot(doc(getFirestore(), resource, id), (doc) => {
+            const unsubscribe = onSnapshot(doc(getFirestore(), resource, id), (doc) => {
                 const item = {...doc.data(), id: doc.id}
                 commit('SET_ITEM', {resource, id, item})
+                unsubscribe()
                 resolve(item)
             })
+            // commit('APPEND_UNSUBSCRIBE', {unsubscribe})
         })
     }
     ,
 
     fetchItems: ({dispatch}, {ids, resource}) => Promise.all(ids.map(id => dispatch('fetchItem', {resource, id}))),
+
+    // async unsubscribeAllSnapshots({state, commit}) {
+    //     state.ubsubscribes.forEach(unsubscribe => unsubscribe())
+    //     commit('CLEAR_ALL_UNSUBSCRIBES')
+    // },
 
     fetchAllCategories({commit}) {
         console.log('🔥', '🏷', 'all')
