@@ -5,6 +5,9 @@ export default {
     SET_ITEM(state, {resource, item}) {
         upsert(state[resource], docToResource(item))
     },
+    SET_AUTH_ID(state, id) {
+        state.authId = id
+    },
     APPEND_UNSUBSCRIBE(state, {unsubscribe}) {
         state.ubsubscribes.push(unsubscribe)
     },

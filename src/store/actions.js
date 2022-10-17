@@ -8,8 +8,10 @@ import {
     increment,
     getFirestore,
     onSnapshot,
-    query
+    query,
+    setDoc
 } from "firebase/firestore";
+import {createUserWithEmailAndPassword, getAuth, onAuthStateChanged} from "firebase/auth";
 
 export default {
     async createPost({commit, state}, post) {
@@ -22,8 +24,7 @@ export default {
         const userRef = doc(db, 'threads', state.authId)
         batch.set(postRef, post)
         batch.update(threadRef, {
-            posts: arrayUnion(postRef.id),
-            contributors: arrayUnion(state.authId)
+            posts: arrayUnion(postRef.id), contributors: arrayUnion(state.authId)
         })
         batch.update(userRef, {
             postCount: increment(1)
@@ -34,17 +35,32 @@ export default {
         commit('APPEND_POST_TO_THREAD', {childId: postRef.id, parentId: post.threadId})
         commit('APPEND_CONTRIBUTOR_TO_THREAD', {childId: state.authId, parentId: post.threadId})
     },
-    updateUser({commit}, user) {
+
+    async registerUserWithEmailAndPassword({dispatch}, {avatar = null, email, name, username, password}) {
+        const auth = getAuth()
+        const result = await createUserWithEmailAndPassword(auth, email, password)
+        await dispatch('createUser', {id: result.user.uid, email, name, username, avatar})
+        await dispatch('fetchAuthUser')
+    },
+
+    async createUser({commit}, {id, email, name, username, avatar = null}) {
+        const registeredAt = serverTimestamp()
+        const usernameLower = username.toLowerCase()
+        email = email.toLowerCase()
+        const user = {avatar, email, name, username, usernameLower, registeredAt}
+        const db = getFirestore()
+        await setDoc(doc(db, 'users', id), user)
+        commit('SET_ITEM', {resource: 'users', item: user})
+        return user
+    }, updateUser({commit}, user) {
         commit('SET_ITEM', {resource: 'users', item: user})
     },
+
     async updatePost({commit, state}, {text, id}) {
 
         const post = {
-            text,
-            edited: {
-                at: serverTimestamp(),
-                by: state.authId,
-                moderated: false
+            text, edited: {
+                at: serverTimestamp(), by: state.authId, moderated: false
             }
         }
         const db = getFirestore()
@@ -54,6 +70,7 @@ export default {
         await batch.commit()
         commit('SET_ITEM', {resource: 'posts', item: post})
     },
+
     async createThread({commit, state, dispatch}, {text, title, forumId}) {
         const userId = state.authId
         const publishedAt = serverTimestamp()
@@ -105,7 +122,16 @@ export default {
 
     fetchUser: ({dispatch}, {id}) => dispatch('fetchItem', {resource: "users", id}),
 
-    fetchAuthUser: ({dispatch, state}) => dispatch('fetchItem', {resource: "users", id: state.authId}),
+    fetchAuthUser: ({dispatch, commit, state}) => {
+        const auth = getAuth()
+        const userId = onAuthStateChanged(auth, (user) => {
+            commit('SET_AUTH_ID', user.uid)
+            dispatch('fetchItem', {resource: "users", id: state.authId})
+        })
+
+        if(!userId) return
+
+    },
 
     fetchPost: ({dispatch}, {id}) => dispatch('fetchItem', {resource: "posts", id}),
 
@@ -131,8 +157,7 @@ export default {
             })
             // commit('APPEND_UNSUBSCRIBE', {unsubscribe})
         })
-    }
-    ,
+    },
 
     fetchItems: ({dispatch}, {ids, resource}) => Promise.all(ids.map(id => dispatch('fetchItem', {resource, id}))),
 
